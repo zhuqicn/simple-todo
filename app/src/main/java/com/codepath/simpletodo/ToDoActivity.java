@@ -10,23 +10,22 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.apache.commons.io.FileUtils;
+import com.activeandroid.query.Select;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ToDoActivity extends AppCompatActivity {
   private final int EDIT_ITEM_REQUEST_CODE = 20;
-  ArrayList<String> items;
-  ArrayAdapter<String> itemsAdapter;
+  ArrayList<ToDoItem> items;
+  ArrayAdapter<ToDoItem> itemsAdapter;
   ListView lvItems;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_to_do);
-
 
     lvItems = (ListView) findViewById(R.id.lvItems);
     readItems();
@@ -42,9 +41,9 @@ public class ToDoActivity extends AppCompatActivity {
       new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+          items.get(position).delete();
           items.remove(position);
           itemsAdapter.notifyDataSetChanged();
-          writeItems();
           return true;
         }
       }
@@ -56,7 +55,7 @@ public class ToDoActivity extends AppCompatActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
           Intent i = new Intent(ToDoActivity.this, EditItemActivity.class);
           i.putExtra("position", position);
-          i.putExtra("value", items.get(position));
+          i.putExtra("value", items.get(position).name);
           startActivityForResult(i, EDIT_ITEM_REQUEST_CODE);
           return;
         }
@@ -67,29 +66,19 @@ public class ToDoActivity extends AppCompatActivity {
   public void onAddItem(View view) {
     EditText etNewItem = (EditText) findViewById(R.id.etNewItem);
     String itemText = etNewItem.getText().toString();
-    itemsAdapter.add(itemText);
+    ToDoItem item = new ToDoItem(itemText);
+    item.save();
+    itemsAdapter.add(item);
     etNewItem.setText("");
-    writeItems();
   }
 
   private void readItems() {
     File filesDir = getFilesDir();
     File todoFile = new File(filesDir, "todo.txt");
-    try {
-      items = new ArrayList<String>(FileUtils.readLines(todoFile));
-    } catch (IOException e) {
-      items = new ArrayList<String>();
-    }
-  }
-
-  private void writeItems() {
-    File filesDir = getFilesDir();
-    File todoFile = new File(filesDir, "todo.txt");
-    try {
-      FileUtils.writeLines(todoFile, items);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    items = new ArrayList<ToDoItem>();
+    List<ToDoItem> queryResults = new Select().from(ToDoItem.class).orderBy("Name ASC")
+      .limit(100).execute();
+    items.addAll(queryResults);
   }
 
   @Override
@@ -101,9 +90,9 @@ public class ToDoActivity extends AppCompatActivity {
         return;
       }
       String value = data.getStringExtra("value");
-      items.set(position, value);
+      items.get(position).name = value;
+      items.get(position).save();
       itemsAdapter.notifyDataSetChanged();
-      writeItems();
     }
   }
 }
