@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -19,7 +18,7 @@ import java.util.List;
 public class ToDoActivity extends AppCompatActivity {
   private final int EDIT_ITEM_REQUEST_CODE = 20;
   ArrayList<ToDoItem> items;
-  ArrayAdapter<ToDoItem> itemsAdapter;
+  ToDoAdapter itemsAdapter;
   ListView lvItems;
 
   @Override
@@ -29,8 +28,7 @@ public class ToDoActivity extends AppCompatActivity {
 
     lvItems = (ListView) findViewById(R.id.lvItems);
     readItems();
-    itemsAdapter = new ArrayAdapter<>(this,
-      android.R.layout.simple_list_item_1, items);
+    itemsAdapter = new ToDoAdapter(this, items);
     lvItems.setAdapter(itemsAdapter);
     setupListViewListener();
   }
