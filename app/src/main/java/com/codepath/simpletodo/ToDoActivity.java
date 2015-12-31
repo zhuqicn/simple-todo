@@ -1,13 +1,11 @@
 package com.codepath.simpletodo;
 
-import android.content.Intent;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.activeandroid.query.Select;
 
@@ -15,8 +13,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ToDoActivity extends AppCompatActivity {
-  private final int EDIT_ITEM_REQUEST_CODE = 20;
+public class ToDoActivity extends AppCompatActivity
+  implements EditItemFragment.FinishEditToDoItemListener,
+  ToDoAdapter.ToggleToDoItemStatusListener
+{
   ArrayList<ToDoItem> items;
   ToDoAdapter itemsAdapter;
   ListView lvItems;
@@ -51,10 +51,10 @@ public class ToDoActivity extends AppCompatActivity {
       new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-          Intent i = new Intent(ToDoActivity.this, EditItemActivity.class);
-          i.putExtra("position", position);
-          i.putExtra("value", items.get(position).name);
-          startActivityForResult(i, EDIT_ITEM_REQUEST_CODE);
+          FragmentManager fm = getFragmentManager();
+          EditItemFragment editItemFragment = EditItemFragment.newInstance(items.get(position),
+            position);
+          editItemFragment.show(fm, "fragment_edit_todo_item");
           return;
         }
       }
@@ -62,35 +62,38 @@ public class ToDoActivity extends AppCompatActivity {
   }
 
   public void onAddItem(View view) {
-    EditText etNewItem = (EditText) findViewById(R.id.etNewItem);
-    String itemText = etNewItem.getText().toString();
-    ToDoItem item = new ToDoItem(itemText);
-    item.save();
-    itemsAdapter.add(item);
-    etNewItem.setText("");
+    FragmentManager fm = getFragmentManager();
+    EditItemFragment editItemFragment = EditItemFragment.newInstance(null, -1);
+    editItemFragment.show(fm, "fragment_edit_todo_item");
   }
 
   private void readItems() {
     File filesDir = getFilesDir();
     File todoFile = new File(filesDir, "todo.txt");
     items = new ArrayList<ToDoItem>();
-    List<ToDoItem> queryResults = new Select().from(ToDoItem.class).orderBy("Name ASC")
-      .limit(100).execute();
+    List<ToDoItem> queryResults = new Select().from(ToDoItem.class)
+      .orderBy("Priority ASC, Due ASC, Name ASC").limit(100).execute();
     items.addAll(queryResults);
   }
 
   @Override
-  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == EDIT_ITEM_REQUEST_CODE && resultCode == RESULT_OK) {
-      int position = data.getIntExtra("position", -1);
-      if (position < 0) {
-        Toast.makeText(getApplicationContext(), "Invalid operation", Toast.LENGTH_SHORT).show();
-        return;
-      }
-      String value = data.getStringExtra("value");
-      items.get(position).name = value;
+  public void onFinishEditToDoItem(ToDoItem item, int position) {
+    if (position < 0) {
+      // Add item.
+      item.save();
+      items.add(item);
+    } else {
+      // Edit item.
+      items.get(position).CopyFrom(item);
       items.get(position).save();
-      itemsAdapter.notifyDataSetChanged();
     }
+    itemsAdapter.notifyDataSetChanged();
+  }
+
+  @Override
+  public void onToggleToDoItemStatus(int position, int status) {
+    items.get(position).status = status;
+    items.get(position).save();
+    itemsAdapter.notifyDataSetChanged();
   }
 }

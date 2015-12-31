@@ -39,8 +39,11 @@ public class ToDoItem extends Model {
     return priorityStrings[this.priority];
   }
 
-  @Override
-  public String toString() {
-    return this.name;
+  public void CopyFrom(ToDoItem item) {
+    this.name = item.name;
+    this.status = item.status;
+    this.due = item.due;
+    this.detail = item.detail;
+    this.priority = item.priority;
   }
 }

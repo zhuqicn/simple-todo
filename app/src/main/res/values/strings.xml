@@ -4,4 +4,13 @@
     <string name="title_activity_edit_item">Edit Item</string>
     <string name="edit_item_below">Edit Item Below:</string>
     <string name="btn_save">Save</string>
+    <string name="edit_name">Item Name</string>
+    <string name="edit_save">Save</string>
+    <string name="edit_cancel">Cancel</string>
+    <string name="edit_due">Due Date</string>
+    <string name="edit_detail">Detail</string>
+    <string name="edit_priority">Priority</string>
+    <string name="edit_status">Status</string>
+    <string name="add_todo_title">Add ToDo Item</string>
+    <string name="edit_todo_title">Edit ToDo Item</string>
 </resources>
