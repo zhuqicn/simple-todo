@@ -1,6 +1,7 @@
 package com.codepath.simpletodo;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 
 public class ToDoAdapter extends ArrayAdapter {
   private ToggleToDoItemStatusListener callback;
+  private static final String[] PRIORITY_COLORS = {
+      "#ff5a5f", "#007a87", "#00d1c1", "#ffaa91", "#9CA299"};
 
   public ToDoAdapter(Context context, ArrayList<ToDoItem> items) {
     super(context, 0, items);
@@ -38,6 +41,7 @@ public class ToDoAdapter extends ArrayAdapter {
     // Update value of each view.
     tvName.setText(item.name);
     tvPriority.setText(item.getPriorityString());
+    tvPriority.setTextColor(Color.parseColor((PRIORITY_COLORS[item.priority])));
     if (item.due != null) {
       tvDue.setText(DateFormat.getDateInstance().format(item.due));
     }
